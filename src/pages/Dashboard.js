@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Box,
@@ -23,7 +23,7 @@ const Dashboard = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  const loadTasks = async () => {
+  const loadTasks = useCallback(async () => {
     try {
       const params = {};
       if (filter === 'completed') params.completed = true;
@@ -35,11 +35,11 @@ const Dashboard = () => {
     } catch (err) {
       setError('Failed to load tasks');
     }
-  };
+  }, [filter, category]);
 
   useEffect(() => {
     loadTasks();
-  }, [filter, category]);
+  }, [loadTasks]);
 
   const handleAddTask = async (taskData) => {
     try {

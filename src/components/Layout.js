@@ -8,8 +8,7 @@ import {
   Typography,
   IconButton,
   Menu,
-  MenuItem,
-  Avatar
+  MenuItem
 } from '@mui/material';
 import { AccountCircle } from '@mui/icons-material';
 
