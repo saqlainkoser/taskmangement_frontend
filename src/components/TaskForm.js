@@ -1,65 +1,213 @@
 import { useState } from 'react';
 import {
-  Paper,
+  Box,
   TextField,
   Button,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
-  Box
+  styled,
+  alpha,
+  IconButton
 } from '@mui/material';
+import { Close as CloseIcon } from '@mui/icons-material';
+import { motion } from 'framer-motion';
 
-const categories = ['Work', 'Personal', 'Shopping', 'Health', 'Other'];
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    backgroundColor: alpha('#fff', 0.05),
+    borderRadius: '12px',
+    '&:hover': {
+      backgroundColor: alpha('#fff', 0.08),
+    },
+    '&.Mui-focused': {
+      backgroundColor: alpha('#fff', 0.08),
+    }
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: alpha('#fff', 0.1),
+  },
+  '& .MuiInputLabel-root': {
+    color: alpha('#fff', 0.7),
+  },
+  '& .MuiOutlinedInput-input': {
+    color: '#fff',
+  },
+  marginBottom: theme.spacing(2)
+}));
 
-const TaskForm = ({ onSubmit }) => {
-  const [task, setTask] = useState({
+const StyledSelect = styled(Select)(({ theme }) => ({
+  backgroundColor: alpha('#fff', 0.05),
+  borderRadius: '12px',
+  color: '#fff',
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: alpha('#fff', 0.1),
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: alpha('#fff', 0.2),
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: '#6C5DD3',
+  },
+  '& .MuiSelect-icon': {
+    color: alpha('#fff', 0.7),
+  }
+}));
+
+const FormContainer = styled(Box)(({ theme }) => ({
+  backgroundColor: alpha('#fff', 0.03),
+  borderRadius: '16px',
+  padding: theme.spacing(3),
+  position: 'relative'
+}));
+
+const ButtonContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(2),
+  marginTop: theme.spacing(2)
+}));
+
+const SaveButton = styled(Button)(({ theme }) => ({
+  backgroundColor: '#6C5DD3',
+  color: '#fff',
+  borderRadius: '12px',
+  padding: theme.spacing(1, 3),
+  '&:hover': {
+    backgroundColor: '#5B4FC9',
+  }
+}));
+
+const CancelButton = styled(Button)(({ theme }) => ({
+  backgroundColor: alpha('#fff', 0.05),
+  color: '#fff',
+  borderRadius: '12px',
+  padding: theme.spacing(1, 3),
+  '&:hover': {
+    backgroundColor: alpha('#fff', 0.1),
+  }
+}));
+
+const CloseButton = styled(IconButton)(({ theme }) => ({
+  position: 'absolute',
+  right: theme.spacing(2),
+  top: theme.spacing(2),
+  color: alpha('#fff', 0.7),
+  '&:hover': {
+    backgroundColor: alpha('#fff', 0.1),
+  }
+}));
+
+const TaskForm = ({ onSubmit, onCancel }) => {
+  const [formData, setFormData] = useState({
+    title: '',
     description: '',
     category: 'Other',
-    completed: false
+    dueDate: ''
   });
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(task);
-    setTask({
+    onSubmit({
+      ...formData,
+      createdAt: new Date().toISOString()
+    });
+    setFormData({
+      title: '',
       description: '',
       category: 'Other',
-      completed: false
+      dueDate: ''
     });
   };
 
   return (
-    <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
-      <form onSubmit={handleSubmit}>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <TextField
-            label="Task Description"
-            value={task.description}
-            onChange={(e) => setTask({ ...task, description: e.target.value })}
-            required
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+    >
+      <FormContainer>
+        <form onSubmit={handleSubmit}>
+          {onCancel && (
+            <CloseButton onClick={onCancel}>
+              <CloseIcon />
+            </CloseButton>
+          )}
+          
+          <StyledTextField
+            name="title"
+            label="Task Title"
+            value={formData.title}
+            onChange={handleChange}
             fullWidth
+            required
           />
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel>Category</InputLabel>
-            <Select
-              value={task.category}
-              label="Category"
-              onChange={(e) => setTask({ ...task, category: e.target.value })}
+
+          <StyledTextField
+            name="description"
+            label="Description"
+            value={formData.description}
+            onChange={handleChange}
+            fullWidth
+            multiline
+            rows={3}
+          />
+
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <FormControl fullWidth>
+              <StyledSelect
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                displayEmpty
+              >
+                <MenuItem value="Work">Work</MenuItem>
+                <MenuItem value="Personal">Personal</MenuItem>
+                <MenuItem value="Shopping">Shopping</MenuItem>
+                <MenuItem value="Health">Health</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </StyledSelect>
+            </FormControl>
+
+            <StyledTextField
+              name="dueDate"
+              type="date"
+              value={formData.dueDate}
+              onChange={handleChange}
+              fullWidth
+              InputLabelProps={{
+                shrink: true,
+              }}
+              sx={{ mb: 0 }}
+            />
+          </Box>
+
+          <ButtonContainer>
+            <SaveButton
+              type="submit"
+              variant="contained"
+              fullWidth
             >
-              {categories.map((category) => (
-                <MenuItem key={category} value={category}>
-                  {category}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Button type="submit" variant="contained" color="primary">
-            Add Task
-          </Button>
-        </Box>
-      </form>
-    </Paper>
+              Save Task
+            </SaveButton>
+            {onCancel && (
+              <CancelButton
+                onClick={onCancel}
+                fullWidth
+              >
+                Cancel
+              </CancelButton>
+            )}
+          </ButtonContainer>
+        </form>
+      </FormContainer>
+    </motion.div>
   );
 };
 
